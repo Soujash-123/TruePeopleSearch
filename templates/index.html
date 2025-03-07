@@ -84,6 +84,36 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
         .person-card {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -196,6 +226,28 @@
             background-color: var(--primary-color);
         }
         
+        .download-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .download-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .download-btn i {
+            margin-right: 8px;
+        }
+        
         .json-preview {
             background-color: #f8f9fa;
             padding: 1rem;
@@ -291,6 +343,18 @@
             display: none;
             z-index: 9999;
         }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .results-actions {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -337,7 +401,14 @@
             </div>
             
             <div id="results" class="mt-4">
-                <h2 id="results-heading" style="display: none;" class="mb-4 results-animate">Search Results</h2>
+                <div class="results-header" id="results-header" style="display: none;">
+                    <h2 class="results-animate mb-0">Search Results</h2>
+                    <div class="results-actions">
+                        <button id="download-csv" class="download-btn">
+                            <i class="fas fa-file-csv"></i>Download CSV
+                        </button>
+                    </div>
+                </div>
                 <div id="people-list"></div>
                 <div id="no-results" style="display: none;" class="text-center mt-4 p-4 bg-light rounded">
                     <i class="fas fa-search-minus fa-3x mb-3 text-muted"></i>
@@ -390,6 +461,9 @@
         // Current person data for modal
         let currentPersonData = null;
         
+        // Store all search results
+        let allSearchResults = [];
+        
         // Initialize modal
         let personModal = null;
         
@@ -411,6 +485,11 @@
                     });
                 }
             });
+            
+            // Download CSV button handler
+            document.getElementById('download-csv').addEventListener('click', function() {
+                downloadAsCSV(allSearchResults);
+            });
         });
         
         document.getElementById('search-form').addEventListener('submit', function(e) {
@@ -418,7 +497,7 @@
             
             // Reset previous results
             document.getElementById('people-list').innerHTML = '';
-            document.getElementById('results-heading').style.display = 'none';
+            document.getElementById('results-header').style.display = 'none';
             document.getElementById('no-results').style.display = 'none';
             document.getElementById('error-message').style.display = 'none';
             
@@ -464,8 +543,11 @@
                 // Process results
                 const people = data.people;
                 
+                // Store all search results for CSV export
+                allSearchResults = people;
+                
                 if (people && people.length > 0) {
-                    document.getElementById('results-heading').style.display = 'block';
+                    document.getElementById('results-header').style.display = 'flex';
                     
                     const peopleList = document.getElementById('people-list');
                     
@@ -560,6 +642,36 @@
             
             // Show modal
             personModal.show();
+        }
+        
+        function downloadAsCSV(data) {
+            if (!data || data.length === 0) {
+                return;
+            }
+            
+            // Create CSV header
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Name,Age,Locations\n";
+            
+            // Add data rows
+            data.forEach(person => {
+                const name = person.name.replace(/,/g, ' '); // Remove commas from name
+                const age = person.age;
+                const locations = person.locations.join(' | ').replace(/,/g, ' '); // Join locations with pipe and remove commas
+                
+                csvContent += `${name},${age},"${locations}"\n`;
+            });
+            
+            // Create download link and trigger download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "people_search_results.csv");
+            document.body.appendChild(link); // Required for Firefox
+            
+            link.click();
+            
+            document.body.removeChild(link);
         }
     </script>
 </body>

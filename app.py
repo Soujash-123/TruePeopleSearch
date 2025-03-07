@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 import requests
 from bs4 import BeautifulSoup
 import time
+import csv
+import io
 
 app = Flask(__name__)
 
@@ -59,7 +61,7 @@ def search():
             # Store in list
             people.append({"name": name, "age": age, "locations": locations})
         
-        # If no results found, return empty list
+        # If no results found, return sample data for demonstration
         if not people:
             # For demonstration purposes, add a mock result if no results found
             people = [
@@ -84,6 +86,41 @@ def search():
         
     except requests.exceptions.RequestException as e:
         return jsonify({'error': f"Request error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({'error': f"An error occurred: {str(e)}"}), 500
+
+@app.route('/download-csv', methods=['POST'])
+def download_csv():
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+        
+        if not data or not isinstance(data, list):
+            return jsonify({'error': 'Invalid data format'}), 400
+        
+        # Create a CSV in memory
+        si = io.StringIO()
+        csv_writer = csv.writer(si)
+        
+        # Write header
+        csv_writer.writerow(['Name', 'Age', 'Locations'])
+        
+        # Write data rows
+        for person in data:
+            locations = ' | '.join(person.get('locations', []))
+            csv_writer.writerow([
+                person.get('name', 'Unknown'),
+                person.get('age', 'Unknown'),
+                locations
+            ])
+        
+        # Create and configure response
+        output = make_response(si.getvalue())
+        output.headers["Content-Disposition"] = "attachment; filename=people_search_results.csv"
+        output.headers["Content-type"] = "text/csv"
+        
+        return output
+    
     except Exception as e:
         return jsonify({'error': f"An error occurred: {str(e)}"}), 500
 
