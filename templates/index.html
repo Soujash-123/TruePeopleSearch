@@ -3,676 +3,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>People Search Pro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --accent-color: #4895ef;
-            --background-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --text-muted: #6c757d;
-        }
-        
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        
-        .search-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .search-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-        }
-        
-        .search-header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-        
-        .search-header h1 {
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-control {
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            border: 1px solid #dde1e7;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus {
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        
-        .btn-outline-primary {
-            color: var(--primary-color);
-            background-color: transparent;
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-            padding: 0.7rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: var(--primary-color);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .person-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .person-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 5px;
-            background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
-        }
-        
-        .person-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .loading {
-            text-align: center;
-            display: none;
-            margin: 2rem 0;
-        }
-        
-        .loading-text {
-            margin-top: 1rem;
-            font-size: 1rem;
-            color: var(--text-muted);
-        }
-        
-        .status-message {
-            background-color: #e7f1ff;
-            border-left: 4px solid var(--primary-color);
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            color: var(--primary-color);
-            display: none;
-        }
-        
-        .location-badge {
-            background-color: #e7f1ff;
-            color: var(--primary-color);
-            margin-right: 6px;
-            margin-bottom: 6px;
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        
-        #error-message {
-            display: none;
-            color: #dc3545;
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background-color: #f8d7da;
-            border-radius: 8px;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .modal-content {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
-        }
-        
-        .modal-header {
-            border-bottom: 1px solid #eaeaea;
-            padding: 1.5rem;
-        }
-        
-        .modal-title {
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .modal-body {
-            padding: 1.5rem;
-        }
-        
-        .modal-footer {
-            border-top: 1px solid #eaeaea;
-            padding: 1.5rem;
-        }
-        
-        .copy-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .copy-btn:hover {
-            background-color: var(--primary-color);
-        }
-        
-        .download-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .download-btn:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .download-btn i {
-            margin-right: 8px;
-        }
-        
-        .json-preview {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .person-details {
-            margin-bottom: 1.5rem;
-        }
-        
-        .person-details h3 {
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-        }
-        
-        .info-row {
-            display: flex;
-            margin-bottom: 0.5rem;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            min-width: 90px;
-        }
-        
-        .avatar-container {
-            width: 60px;
-            height: 60px;
-            background-color: #e7f1ff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            color: var(--primary-color);
-            font-size: 1.5rem;
-        }
-        
-        .card-content {
-            display: flex;
-            align-items: center;
-        }
-        
-        .card-details {
-            flex: 1;
-        }
-        
-        /* Spinner Animation */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(67, 97, 238, 0.2);
-            border-radius: 50%;
-            border-left-color: var(--primary-color);
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Result heading animation */
-        .results-animate {
-            animation: fadeSlideIn 0.5s forwards;
-        }
-        
-        @keyframes fadeSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Copy notification */
-        .copy-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 9999;
-        }
-        
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .results-actions {
-            display: flex;
-            gap: 10px;
-        }
-    </style>
+    <title>People & Foreclosure Search</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <div class="search-container">
-            <div class="search-header">
-                <h1>People Search Pro</h1>
-                <p class="text-muted">Find detailed information about people securely and efficiently</p>
-            </div>
-            
-            <form id="search-form">
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <label for="first_name" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="first_name" name="first_name" required placeholder="Enter first name">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="last_name" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="last_name" name="last_name" required placeholder="Enter last name">
-                    </div>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-2"></i>Search
-                    </button>
-                </div>
-            </form>
-            
-            <div id="error-message"></div>
-            
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <div class="loading-text">Processing search request...</div>
-                
-                <div id="status-scraping" class="status-message mt-3">
-                    <i class="fas fa-spinner fa-spin me-2"></i>Scraping...
-                </div>
-                <div id="status-proxy1" class="status-message">
-                    <i class="fas fa-shield-alt me-2"></i>Bypassing Captcha using Proxy1...
-                </div>
-                <div id="status-proxy2" class="status-message">
-                    <i class="fas fa-shield-alt me-2"></i>Bypassing ReCaptcha using Proxy2...
-                </div>
-            </div>
-            
-            <div id="results" class="mt-4">
-                <div class="results-header" id="results-header" style="display: none;">
-                    <h2 class="results-animate mb-0">Search Results</h2>
-                    <div class="results-actions">
-                        <button id="download-csv" class="download-btn">
-                            <i class="fas fa-file-csv"></i>Download CSV
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Location Selection Modal -->
+        <div id="locationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+            <div class="relative p-4 w-full max-w-md mx-auto mt-20">
+                <div class="relative bg-white rounded-lg shadow">
+                    <div class="flex items-center justify-between p-4 border-b">
+                        <h3 class="text-xl font-semibold">Select Location</h3>
+                        <button type="button" class="close-modal text-gray-400 hover:text-gray-500">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
-                </div>
-                <div id="people-list"></div>
-                <div id="no-results" style="display: none;" class="text-center mt-4 p-4 bg-light rounded">
-                    <i class="fas fa-search-minus fa-3x mb-3 text-muted"></i>
-                    <p class="text-muted">No results found. Try different search terms.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Person Details Modal -->
-    <div class="modal fade" id="personModal" tabindex="-1" aria-labelledby="personModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="personModalLabel">Person Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="person-details" id="modal-person-details">
-                        <!-- Details will be populated here -->
+                    <div class="p-4">
+                        <div id="locationList" class="space-y-2">
+                            <!-- Locations will be populated here -->
+                        </div>
                     </div>
-                    
-                    <h6>JSON Data:</h6>
-                    <div class="json-preview" id="json-preview"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn copy-btn" id="copy-json-btn">
-                        <i class="fas fa-copy me-2"></i>Copy JSON
-                    </button>
+            </div>
+        </div>
+
+        <header class="mb-10 text-center">
+            <h1 class="text-3xl font-bold text-indigo-700">People & Foreclosure Search</h1>
+            <p class="text-gray-600 mt-2">Search for people or find foreclosures in your area</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- People Search Section -->
+            <div class="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">People Search</h2>
+                <form id="peopleSearchForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input type="text" id="first_name" name="first_name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Search</button>
+                </form>
+
+                <div id="peopleResults" class="mt-6 hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-lg font-semibold text-gray-800">Results</h3>
+                        <button id="downloadPeople" class="bg-green-600 text-white py-1 px-3 rounded-md hover:bg-green-700 text-sm">
+                            Download CSV
+                        </button>
+                    </div>
+                    <div id="peopleList" class="space-y-4"></div>
+                </div>
+                <div id="peopleLoading" class="mt-6 text-center hidden">
+                    <p class="text-gray-600">Searching... Please wait</p>
+                </div>
+                <div id="peopleError" class="mt-6 text-center hidden">
+                    <p class="text-red-600"></p>
+                </div>
+            </div>
+
+            <!-- Foreclosure Search Section -->
+            <div class="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Foreclosure Search</h2>
+                <form id="foreclosureSearchForm" class="space-y-4">
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location (City, State or ZIP)</label>
+                        <input type="text" id="location" name="location" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Search Foreclosures</button>
+                </form>
+
+                <div id="foreclosureResults" class="mt-6 hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-lg font-semibold text-gray-800">Foreclosure Listings</h3>
+                        <button id="downloadForeclosures" class="bg-green-600 text-white py-1 px-3 rounded-md hover:bg-green-700 text-sm">
+                            Download CSV
+                        </button>
+                    </div>
+                    <div id="foreclosureList" class="space-y-4"></div>
+                </div>
+                <div id="foreclosureLoading" class="mt-6 text-center hidden">
+                    <p class="text-gray-600">Searching... Please wait</p>
+                </div>
+                <div id="foreclosureError" class="mt-6 text-center hidden">
+                    <p class="text-red-600"></p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Copy Notification -->
-    <div class="copy-notification" id="copy-notification">
-        <i class="fas fa-check-circle me-2"></i>JSON copied to clipboard!
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Initialize status message timing
-        let statusMessageTiming = {
-            scraping: 1500,
-            proxy1: 3000,
-            proxy2: 5000
-        };
-        
-        // Current person data for modal
-        let currentPersonData = null;
-        
-        // Store all search results
-        let allSearchResults = [];
-        
-        // Initialize modal
-        let personModal = null;
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Bootstrap modal
-            personModal = new bootstrap.Modal(document.getElementById('personModal'));
-            
-            // Copy JSON button handler
-            document.getElementById('copy-json-btn').addEventListener('click', function() {
-                if (currentPersonData) {
-                    const jsonString = JSON.stringify(currentPersonData, null, 2);
-                    navigator.clipboard.writeText(jsonString).then(() => {
-                        // Show notification
-                        const notification = document.getElementById('copy-notification');
-                        notification.style.display = 'block';
-                        setTimeout(() => {
-                            notification.style.display = 'none';
-                        }, 3000);
-                    });
-                }
-            });
-            
-            // Download CSV button handler
-            document.getElementById('download-csv').addEventListener('click', function() {
-                downloadAsCSV(allSearchResults);
-            });
-        });
-        
-        document.getElementById('search-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Reset previous results
-            document.getElementById('people-list').innerHTML = '';
-            document.getElementById('results-header').style.display = 'none';
-            document.getElementById('no-results').style.display = 'none';
-            document.getElementById('error-message').style.display = 'none';
-            
-            // Show loading spinner
-            document.getElementById('loading').style.display = 'block';
-            
-            // Display status messages with delays
-            setTimeout(() => {
-                document.getElementById('status-scraping').style.display = 'block';
-            }, statusMessageTiming.scraping);
-            
-            setTimeout(() => {
-                document.getElementById('status-proxy1').style.display = 'block';
-            }, statusMessageTiming.proxy1);
-            
-            setTimeout(() => {
-                document.getElementById('status-proxy2').style.display = 'block';
-            }, statusMessageTiming.proxy2);
-            
-            // Get form data
-            const formData = new FormData(this);
-            
-            // Make AJAX request
-            fetch('/search', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Hide loading spinner and status messages
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('status-scraping').style.display = 'none';
-                document.getElementById('status-proxy1').style.display = 'none';
-                document.getElementById('status-proxy2').style.display = 'none';
+        // Store people search results globally
+        let peopleSearchResults = [];
+
+        $(document).ready(function() {
+            // People Search Form Submission
+            $('#peopleSearchForm').submit(function(e) {
+                e.preventDefault();
                 
-                // Handle error
-                if (data.error) {
-                    document.getElementById('error-message').textContent = data.error;
-                    document.getElementById('error-message').style.display = 'block';
-                    return;
-                }
+                $('#peopleResults').addClass('hidden');
+                $('#peopleError').addClass('hidden');
+                $('#peopleLoading').removeClass('hidden');
                 
-                // Process results
-                const people = data.people;
-                
-                // Store all search results for CSV export
-                allSearchResults = people;
-                
-                if (people && people.length > 0) {
-                    document.getElementById('results-header').style.display = 'flex';
-                    
-                    const peopleList = document.getElementById('people-list');
-                    
-                    people.forEach((person, index) => {
-                        const personCard = document.createElement('div');
-                        personCard.className = 'person-card results-animate';
-                        personCard.style.animationDelay = `${index * 0.1}s`;
+                $.ajax({
+                    url: '/search',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#peopleLoading').addClass('hidden');
+                        $('#peopleList').empty();
                         
-                        // Create locations HTML
-                        const locationsHtml = person.locations.map(location => 
-                            `<span class="location-badge">${location}</span>`
-                        ).join('');
-                        
-                        // Get initials for avatar
-                        const nameParts = person.name.split(' ');
-                        const initials = nameParts.length > 1 
-                            ? (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase()
-                            : nameParts[0].charAt(0).toUpperCase();
-                        
-                        personCard.innerHTML = `
-                            <div class="card-content">
-                                <div class="avatar-container">
-                                    ${initials}
-                                </div>
-                                <div class="card-details">
-                                    <h3 class="mb-1">${person.name}</h3>
-                                    <p class="text-muted mb-2">Age: ${person.age}</p>
-                                    <div class="locations-container">
-                                        ${locationsHtml}
+                        if (response.people && response.people.length > 0) {
+                            // Store the results globally
+                            peopleSearchResults = response.people;
+                            
+                            response.people.forEach(function(person, index) {
+                                let locations = person.locations.join('<br>• ');
+                                let personCard = `
+                                    <div class="border border-gray-200 rounded-md p-4 hover:bg-gray-50">
+                                        <div class="flex justify-between">
+                                            <h4 class="text-lg font-medium text-gray-800">${person.name}</h4>
+                                            <span class="text-gray-600">Age: ${person.age}</span>
+                                        </div>
+                                        <div class="mt-2">
+                                            <p class="text-sm text-gray-700 font-medium">Locations:</p>
+                                            <p class="text-sm text-gray-600">• ${locations}</p>
+                                        </div>
+                                        <div class="mt-3 flex space-x-2">
+                                            <button type="button" 
+                                                class="search-foreclosures bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded-md text-sm font-medium"
+                                                data-person-index="${index}">
+                                                Search Foreclosures
+                                            </button>
+                                            <button type="button" 
+                                                class="search-all-locations bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded-md text-sm font-medium"
+                                                data-person-index="${index}">
+                                                Search All Locations
+                                            </button>
+                                        </div>
                                     </div>
+                                `;
+                                $('#peopleList').append(personCard);
+                            });
+                            $('#peopleResults').removeClass('hidden');
+
+                            // Attach event listeners to the new buttons
+                            attachForeclosureButtonListeners();
+                        } else {
+                            $('#peopleError p').text('No results found.');
+                            $('#peopleError').removeClass('hidden');
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#peopleLoading').addClass('hidden');
+                        let errorMsg = 'An error occurred while searching.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        }
+                        $('#peopleError p').text(errorMsg);
+                        $('#peopleError').removeClass('hidden');
+                    }
+                });
+            });
+
+            // Function to attach event listeners to foreclosure search buttons
+            function attachForeclosureButtonListeners() {
+                // Single location search
+                $('.search-foreclosures').click(function() {
+                    const personIndex = $(this).data('person-index');
+                    const person = peopleSearchResults[personIndex];
+                    
+                    // Only use the first location
+                    if (person.locations && person.locations.length > 0) {
+                        const location = person.locations[0];
+                        searchForeclosuresByLocation(location);
+                    } else {
+                        $('#foreclosureError p').text('No location information available for this person.');
+                        $('#foreclosureError').removeClass('hidden');
+                    }
+                });
+
+                // All locations search
+                $('.search-all-locations').click(function() {
+                    const personIndex = $(this).data('person-index');
+                    const person = peopleSearchResults[personIndex];
+                    
+                    searchAllLocations(person);
+                });
+            }
+
+            // Function to search foreclosures by location
+            function searchForeclosuresByLocation(location) {
+                $('#foreclosureResults').addClass('hidden');
+                $('#foreclosureError').addClass('hidden');
+                $('#foreclosureLoading').removeClass('hidden');
+                
+                // Set the location in the input field for reference
+                $('#location').val(location);
+                
+                $.ajax({
+                    url: '/foreclosures',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ location: location }),
+                    success: function(response) {
+                        $('#foreclosureLoading').addClass('hidden');
+                        $('#foreclosureList').empty();
+                        
+                        if (response.listings && response.listings.length > 0) {
+                            // Add a header showing which location we're viewing
+                            $('#foreclosureList').append(`
+                                <div class="mb-4 p-2 bg-indigo-50 rounded-md">
+                                    <h4 class="font-medium">Showing results for: ${location}</h4>
                                 </div>
-                                <div>
-                                    <i class="fas fa-chevron-right text-muted"></i>
+                            `);
+                            
+                            response.listings.forEach(function(listing) {
+                                let listingCard = `
+                                    <div class="border border-gray-200 rounded-md p-4 hover:bg-gray-50">
+                                        <h4 class="text-lg font-medium text-gray-800">${listing.Address}</h4>
+                                        <div class="flex justify-between mt-2">
+                                            <span class="text-sm bg-gray-100 text-gray-700 px-2 py-1 rounded">${listing["Property Type"]}</span>
+                                            <span class="text-sm ${listing.Status.includes('Foreclosure') ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'} px-2 py-1 rounded">${listing.Status}</span>
+                                        </div>
+                                    </div>
+                                `;
+                                $('#foreclosureList').append(listingCard);
+                            });
+                            $('#foreclosureResults').removeClass('hidden');
+                        } else {
+                            $('#foreclosureError p').text('No foreclosures found for this location.');
+                            $('#foreclosureError').removeClass('hidden');
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#foreclosureLoading').addClass('hidden');
+                        let errorMsg = 'An error occurred while searching for foreclosures.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        $('#foreclosureError p').text(errorMsg);
+                        $('#foreclosureError').removeClass('hidden');
+                    }
+                });
+            }
+
+            // Function to search all locations for a person
+            function searchAllLocations(person) {
+                $('#foreclosureResults').addClass('hidden');
+                $('#foreclosureError').addClass('hidden');
+                $('#foreclosureLoading').removeClass('hidden');
+                
+                // Clear any previous results
+                $('#foreclosureList').empty();
+                
+                // Add a header showing which person we're viewing
+                $('#foreclosureList').append(`
+                    <div class="mb-4 p-2 bg-indigo-50 rounded-md">
+                        <h4 class="font-medium">Searching foreclosures for all locations of: ${person.name}</h4>
+                    </div>
+                `);
+                
+                // Show the results container with the header
+                $('#foreclosureResults').removeClass('hidden');
+                
+                // Track how many searches are pending
+                let pendingSearches = person.locations.length;
+                let hasResults = false;
+                
+                // Search each location independently
+                person.locations.forEach(function(location, index) {
+                    // Create a placeholder for this location
+                    const locationId = `location-results-${index}`;
+                    $('#foreclosureList').append(`
+                        <div class="mb-2 mt-4">
+                            <h4 class="font-medium text-indigo-700">${location}</h4>
+                        </div>
+                        <div id="${locationId}" class="location-results">
+                            <p class="text-gray-600 text-sm p-2">Searching...</p>
+                        </div>
+                    `);
+                    
+                    // Make the API request for this location
+                    $.ajax({
+                        url: '/foreclosures',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ location: location }),
+                        success: function(response) {
+                            // Clear the placeholder
+                            $(`#${locationId}`).empty();
+                            
+                            if (response.listings && response.listings.length > 0) {
+                                hasResults = true;
+                                
+                                // Add each listing
+                                response.listings.forEach(function(listing) {
+                                    let listingCard = `
+                                        <div class="border border-gray-200 rounded-md p-4 hover:bg-gray-50 mb-2">
+                                            <h4 class="text-lg font-medium text-gray-800">${listing.Address}</h4>
+                                            <div class="flex justify-between mt-2">
+                                                <span class="text-sm bg-gray-100 text-gray-700 px-2 py-1 rounded">${listing["Property Type"]}</span>
+                                                <span class="text-sm ${listing.Status.includes('Foreclosure') ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'} px-2 py-1 rounded">${listing.Status}</span>
+                                            </div>
+                                        </div>
+                                    `;
+                                    $(`#${locationId}`).append(listingCard);
+                                });
+                            } else {
+                                $(`#${locationId}`).append(`
+                                    <p class="text-gray-600 text-sm p-2">No foreclosures found for this location.</p>
+                                `);
+                            }
+                        },
+                        error: function(xhr) {
+                            // Show error for this specific location
+                            let errorMsg = 'Error searching this location.';
+                            if (xhr.responseJSON && xhr.responseJSON.error) {
+                                errorMsg = xhr.responseJSON.error;
+                            }
+                            $(`#${locationId}`).empty().append(`
+                                <p class="text-red-600 text-sm p-2">${errorMsg}</p>
+                            `);
+                        },
+                        complete: function() {
+                            // Decrement the pending searches counter
+                            pendingSearches--;
+                            
+                            // If all searches are complete and no results were found
+                            if (pendingSearches === 0 && !hasResults) {
+                                $('#foreclosureList').append(`
+                                    <div class="mt-4 p-2 bg-yellow-50 rounded-md">
+                                        <p class="text-yellow-700">No foreclosures found for any location.</p>
+                                    </div>
+                                `);
+                            }
+                            
+                            // Hide the loading indicator when all searches are complete
+                            if (pendingSearches === 0) {
+                                $('#foreclosureLoading').addClass('hidden');
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Foreclosure Search Form Submission
+            $('#foreclosureSearchForm').submit(function(e) {
+                e.preventDefault();
+                
+                let location = $('#location').val();
+                
+                // Check if there are multiple zip codes in the location
+                if (location.includes(',') && /\d{5}/.test(location)) {
+                    const matches = location.match(/\d{5}/g);
+                    if (matches && matches.length > 1) {
+                        // Get the base location (everything before the first zip code)
+                        const baseLocationMatch = location.match(/^(.*?)(?=\d{5})/);
+                        if (baseLocationMatch) {
+                            const baseLocation = baseLocationMatch[0].trim();
+                            // Create separated locations with each zip code
+                            const locations = matches.map(zipCode => `${baseLocation} ${zipCode}`);
+                            
+                            // Create a mock person object and search all locations
+                            const mockPerson = {
+                                name: "Custom Location Search",
+                                locations: locations
+                            };
+                            
+                            searchAllLocations(mockPerson);
+                            return;
+                        }
+                    }
+                }
+                
+                // If not multiple zip codes, just search the single location
+                searchForeclosuresByLocation(location);
+            });
+
+            // Modal handling
+            function showLocationModal(locations) {
+                const modal = $('#locationModal');
+                const locationList = $('#locationList');
+                locationList.empty();
+                
+                locations.forEach((location, index) => {
+                    locationList.append(`
+                        <div class="location-option cursor-pointer p-2 hover:bg-gray-100 rounded" data-location="${location}">
+                            ${location}
+                        </div>
+                    `);
+                });
+                
+                modal.removeClass('hidden');
+            }
+
+            $('.close-modal').click(() => {
+                $('#locationModal').addClass('hidden');
+            });
+
+            $(document).on('click', '.location-option', function() {
+                const location = $(this).data('location');
+                $('#locationModal').addClass('hidden');
+                searchForeclosuresByLocation(location);
+            });
+
+            // Update the search-foreclosures click handler
+            $(document).on('click', '.search-foreclosures', function() {
+                const personIndex = $(this).data('person-index');
+                const person = peopleSearchResults[personIndex];
+                
+                if (person.locations && person.locations.length > 0) {
+                    showLocationModal(person);
+                } else {
+                    $('#foreclosureError p').text('No location information available for this person.');
+                    $('#foreclosureError').removeClass('hidden');
+                }
+            });
+
+            // Enhanced modal handling
+            function showLocationModal(person) {
+                const modal = $('#locationModal');
+                const locationList = $('#locationList');
+                locationList.empty();
+                
+                // Add person name as header
+                locationList.append(`
+                    <div class="mb-4 text-gray-700 font-medium">
+                        Select a location for ${person.name}:
+                    </div>
+                `);
+                
+                // Add each location as a selectable option
+                person.locations.forEach((location, index) => {
+                    locationList.append(`
+                        <div class="location-option cursor-pointer p-3 hover:bg-indigo-50 rounded-md border border-gray-200 mb-2 transition-colors" 
+                             data-location="${location}">
+                            <div class="flex items-center">
+                                <div class="w-6 h-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 mr-3">
+                                    ${index + 1}
+                                </div>
+                                <div class="flex-grow">
+                                    ${location}
                                 </div>
                             </div>
-                        `;
-                        
-                        // Add click handler to open modal
-                        personCard.addEventListener('click', function() {
-                            openPersonModal(person);
-                        });
-                        
-                        peopleList.appendChild(personCard);
-                    });
-                } else {
-                    document.getElementById('no-results').style.display = 'block';
-                }
-            })
-            .catch(error => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('status-scraping').style.display = 'none';
-                document.getElementById('status-proxy1').style.display = 'none';
-                document.getElementById('status-proxy2').style.display = 'none';
-                document.getElementById('error-message').textContent = "An error occurred while processing your request. Please try again.";
-                document.getElementById('error-message').style.display = 'block';
-                console.error('Error:', error);
-            });
-        });
-        
-        function openPersonModal(person) {
-            // Store current person data for copy function
-            currentPersonData = person;
-            
-            // Update modal title
-            document.getElementById('personModalLabel').textContent = person.name;
-            
-            // Create locations HTML
-            const locationsHtml = person.locations.map(location => 
-                `<span class="location-badge">${location}</span>`
-            ).join('');
-            
-            // Populate person details
-            const detailsContainer = document.getElementById('modal-person-details');
-            detailsContainer.innerHTML = `
-                <div class="info-row">
-                    <div class="info-label">Name:</div>
-                    <div>${person.name}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Age:</div>
-                    <div>${person.age}</div>
-                </div>
-                <div class="info-row mb-2">
-                    <div class="info-label">Locations:</div>
-                    <div>${locationsHtml}</div>
-                </div>
-            `;
-            
-            // Format and display JSON
-            const jsonPreview = document.getElementById('json-preview');
-            jsonPreview.textContent = JSON.stringify(person, null, 2);
-            
-            // Show modal
-            personModal.show();
-        }
-        
-        function downloadAsCSV(data) {
-            if (!data || data.length === 0) {
-                return;
-            }
-            
-            // Create CSV header
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Name,Age,Locations\n";
-            
-            // Add data rows
-            data.forEach(person => {
-                const name = person.name.replace(/,/g, ' '); // Remove commas from name
-                const age = person.age;
-                const locations = person.locations.join(' | ').replace(/,/g, ' '); // Join locations with pipe and remove commas
+                        </div>
+                    `);
+                });
                 
-                csvContent += `${name},${age},"${locations}"\n`;
+                modal.removeClass('hidden');
+            }
+
+            // Close modal when clicking outside
+            $(document).on('click', '#locationModal', function(e) {
+                if (e.target === this) {
+                    $(this).addClass('hidden');
+                }
             });
-            
-            // Create download link and trigger download
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "people_search_results.csv");
-            document.body.appendChild(link); // Required for Firefox
-            
-            link.click();
-            
-            document.body.removeChild(link);
-        }
+
+            // Handle location selection
+            $(document).on('click', '.location-option', function() {
+                const location = $(this).data('location');
+                $('#locationModal').addClass('hidden');
+                searchForeclosuresByLocation(location);
+            });
+
+            // Download handlers
+            $('#downloadPeople').click(function() {
+                if (peopleSearchResults.length === 0) {
+                    alert('Please perform a people search first.');
+                    return;
+                }
+                window.location.href = '/download/people';
+            });
+
+            $('#downloadForeclosures').click(function() {
+                if (!$('#foreclosureList').children().length) {
+                    alert('Please perform a foreclosure search first.');
+                    return;
+                }
+                window.location.href = '/download/foreclosures';
+            });
+
+            // Remove the existing downloadCSV function as we're using direct downloads
+        });
     </script>
 </body>
 </html>
