@@ -108,7 +108,6 @@ def expand_location_with_zip_codes(location):
 
 @app.route('/foreclosure/<int:person_index>', methods=['GET'])
 def foreclosure_by_person(person_index):
-    # Retrieve the session data for people
     try:
         # Get the search results from the session or a temporary storage
         people_data = request.args.get('people_data')
@@ -281,8 +280,144 @@ def download_foreclosures():
     except Exception as e:
         return jsonify({'error': f"An error occurred: {str(e)}"}), 500
 
-# Add secret key for session
-app.secret_key = 'your-secret-key-here'
+@app.route('/upload', methods=['GET'])
+def upload_page():
+    return render_template('upload.html')
+
+@app.route('/upload_csv', methods=['POST'])
+def upload_csv():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+        
+    if not file.filename.endswith('.csv'):
+        return jsonify({'error': 'File must be a CSV'}), 400
+        
+    try:
+        # Read CSV file
+        stream = io.StringIO(file.stream.read().decode("UTF8"))
+        csv_data = list(csv.DictReader(stream))
+        
+        # Return data as JSON instead of rendering template
+        return jsonify({
+            'message': 'File uploaded successfully',
+            'data': csv_data
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f"An error occurred: {str(e)}"}), 500
+
+@app.route('/process-csv', methods=['POST'])
+def process_csv():
+    try:
+        # Get CSV data from request instead of session
+        csv_data = request.json.get('csv_data')
+        if not csv_data:
+            return jsonify({'error': 'No CSV data found. Please upload a CSV first.'}), 400
+
+        print("Processing CSV data:", csv_data)
+        
+        results = []
+        total_records = len(csv_data)
+        processed = 0
+
+        for row in csv_data:
+            # Process both Owner 1 and Owner 2
+            owners = [row.get('Owner 1', '').strip(), row.get('Owner 2', '').strip()]
+            property_info = {
+                'address': row.get('Address', ''),
+                'city': row.get('City', ''),
+                'state': row.get('State', ''),
+                'zip': row.get('Zip', ''),
+                'property_type': row.get('Type', ''),
+                'value': row.get('Total Value', ''),
+                'year_built': row.get('Year Built', '')
+            }
+
+            for owner in owners:
+                if not owner:
+                    continue
+                    
+                # Try to split owner name into first and last
+                name_parts = owner.split()
+                if len(name_parts) < 2:
+                    continue
+                    
+                first_name = name_parts[0]
+                last_name = name_parts[-1]
+                
+                try:
+                    person_name = f"{first_name}-{last_name}"
+                    search_url = f"https://truepeoplesearch.net/people/{person_name}"
+                    payload = {'api_key': API_KEY, 'url': search_url}
+                    
+                    time.sleep(6)  # Respect rate limits
+                    
+                    response = requests.get("https://api.scraperapi.com/", params=payload)
+                    response.raise_for_status()
+                    
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    profiles = soup.find_all("div", class_="cursor-pointer")
+                    
+                    if profiles:
+                        for profile in profiles:
+                            name_tag = profile.find("a", class_="font-bold")
+                            name = name_tag.text.strip() if name_tag else "Unknown"
+                            
+                            age_tag = profile.find("p", class_="text-xl")
+                            age = age_tag.text.split(", Age")[-1].strip() if age_tag and ", Age" in age_tag.text else "Unknown"
+                            
+                            location_tag = profile.find_next("ul", class_="text-theme")
+                            locations = []
+                            if location_tag:
+                                for loc in location_tag.find_all("li"):
+                                    loc_text = loc.text.strip()
+                                    loc_text = re.sub(r'\s*AND\s+\d+\s+MORE\s*', '', loc_text)
+                                    if loc_text:
+                                        locations.append(loc_text)
+                            
+                            if not locations:
+                                locations = [f"{row['City']}, {row['State']} {row['Zip']}"]
+                            
+                            results.append({
+                                "name": name,
+                                "age": age,
+                                "locations": locations,
+                                "original_name": owner,
+                                "property": property_info
+                            })
+                    else:
+                        results.append({
+                            "error": "No profile found",
+                            "original_name": owner,
+                            "property": property_info
+                        })
+                        
+                    processed += 1
+                    if processed % 5 == 0:
+                        print(f"Processed {processed}/{total_records} records")
+                        
+                except Exception as e:
+                    results.append({
+                        "error": str(e),
+                        "original_name": owner,
+                        "property": property_info
+                    })
+
+        # Don't store in session, just return results
+        return jsonify({
+            'message': f'Successfully processed {processed} records',
+            'results': results,
+            'total': total_records,
+            'processed': processed
+        })
+        
+    except Exception as e:
+        print("Error processing CSV:", str(e))
+        return jsonify({'error': f"An error occurred: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

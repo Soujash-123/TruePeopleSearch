@@ -9,6 +9,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
+        <a href="{{ url_for('upload_page') }}" class="btn">Upload CSV</a>
         <!-- Location Selection Modal -->
         <div id="locationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
             <div class="relative p-4 w-full max-w-md mx-auto mt-20">
@@ -35,6 +36,14 @@
             <h1 class="text-3xl font-bold text-indigo-700">People & Foreclosure Search</h1>
             <p class="text-gray-600 mt-2">Search for people or find foreclosures in your area</p>
         </header>
+
+        <div class="flex justify-end mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <div class="text-sm text-gray-600">Available Credits</div>
+                <div class="text-2xl font-bold text-indigo-600">300</div>
+                <div class="text-xs text-gray-500">(3 searches remaining)</div>
+            </div>
+        </div>
 
         <div class="flex flex-col md:flex-row gap-8">
             <!-- People Search Section -->

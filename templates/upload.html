@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload CSV</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-indigo-700">Upload CSV File</h1>
+                    <a href="{{ url_for('index') }}" class="text-indigo-600 hover:text-indigo-800 mt-2 inline-block">← Back to Search</a>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600">Available Credits</div>
+                    <div class="text-2xl font-bold text-indigo-600">300</div>
+                    <div class="text-xs text-gray-500">(3 searches remaining)</div>
+                </div>
+            </div>
+            
+            <form action="{{ url_for('upload_csv') }}" method="post" enctype="multipart/form-data" class="mb-8">
+                <div class="flex items-center gap-4">
+                    <input type="file" name="file" accept=".csv" required 
+                           class="block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-md file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-indigo-50 file:text-indigo-700
+                                  hover:file:bg-indigo-100">
+                    <button type="submit" 
+                            class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Upload
+                    </button>
+                </div>
+            </form>
+
+            {% if data %}
+            <div class="mt-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Uploaded Data</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                {% for header in data[0].keys() %}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ header }}
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for row in data %}
+                            <tr class="hover:bg-gray-50">
+                                {% for value in row.values() %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ value }}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-between items-center">
+                <button id="processCSV" 
+                        class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 
+                               focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Process CSV with TruePeopleSearch
+                </button>
+                <div id="processStatus" class="text-gray-600 hidden">Processing... Please wait</div>
+            </div>
+
+            <div id="processResults" class="mt-6 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Processing Results</h2>
+                <div id="resultsList" class="space-y-4"></div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            // Add this function to store data in localStorage
+            function storeData(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (e) {
+                    console.error('Error storing data:', e);
+                }
+            }
+
+            // Add this function to retrieve data from localStorage
+            function getData(key) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : null;
+                } catch (e) {
+                    console.error('Error retrieving data:', e);
+                    return null;
+                }
+            }
+
+            // Modify the AJAX success handler
+            $('#processCSV').click(function() {
+                const button = $(this);
+                const status = $('#processStatus');
+                const results = $('#processResults');
+                
+                button.prop('disabled', true);
+                status.removeClass('hidden').text('Processing... This may take several minutes.');
+                results.addClass('hidden');
+                
+                $.ajax({
+                    url: '/process-csv',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ csv_data: getData('uploadedCsvData') }), // Send data from localStorage
+                    success: function(response) {
+                        // Store results in localStorage
+                        storeData('processedResults', response.results);
+                        
+                        status.addClass('hidden');
+                        results.removeClass('hidden');
+                        $('#resultsList').empty();
+                        
+                        const totalRecords = response.total;
+                        const processedRecords = response.processed;
+                        
+                        // Add summary header
+                        $('#resultsList').append(`
+                            <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                                <h3 class="text-blue-700 font-medium">Processing Summary</h3>
+                                <p class="text-blue-600">Processed ${processedRecords} out of ${totalRecords} records</p>
+                            </div>
+                        `);
+                        
+                        response.results.forEach(function(result) {
+                            let resultHtml;
+                            if (result.error) {
+                                resultHtml = `
+                                    <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+                                        <div class="text-red-700">Error processing: ${result.original_name}</div>
+                                        <div class="text-red-600 text-sm mt-1">${result.error}</div>
+                                        <div class="mt-2 p-2 bg-gray-50 rounded">
+                                            <div class="text-sm font-medium text-gray-700">Property Information:</div>
+                                            <div class="text-sm text-gray-600">
+                                                ${result.property.address}, ${result.property.city}, ${result.property.state} ${result.property.zip}<br>
+                                                Type: ${result.property.property_type}<br>
+                                                Value: $${result.property.value}<br>
+                                                Year Built: ${result.property.year_built}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                resultHtml = `
+                                    <div class="bg-white border border-gray-200 rounded-md p-4 mb-4">
+                                        <div class="flex justify-between">
+                                            <h4 class="text-lg font-medium text-gray-800">
+                                                ${result.name}
+                                                <span class="text-sm text-gray-500">(Owner: ${result.original_name})</span>
+                                            </h4>
+                                            <span class="text-gray-600">Age: ${result.age}</span>
+                                        </div>
+                                        <div class="mt-2">
+                                            <p class="text-sm text-gray-700">Property:</p>
+                                            <div class="text-sm text-gray-600 bg-gray-50 p-2 rounded mt-1">
+                                                ${result.property.address}, ${result.property.city}, ${result.property.state} ${result.property.zip}<br>
+                                                Type: ${result.property.property_type}<br>
+                                                Value: $${result.property.value}<br>
+                                                Year Built: ${result.property.year_built}
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <p class="text-sm text-gray-700">Known Locations:</p>
+                                            <ul class="list-disc pl-5 mt-1 text-sm text-gray-600">
+                                                ${result.locations.map(loc => `<li>${loc}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            $('#resultsList').append(resultHtml);
+                        });
+                    },
+                    error: function(xhr) {
+                        status.addClass('hidden');
+                        let errorMsg = 'An error occurred while processing.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        }
+                        $('#resultsList').html(`
+                            <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                                <div class="text-red-700">${errorMsg}</div>
+                            </div>
+                        `);
+                        results.removeClass('hidden');
+                    },
+                    complete: function() {
+                        button.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Add handler for file upload form
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                $.ajax({
+                    url: '/upload_csv',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.data) {
+                            // Store uploaded data in localStorage
+                            storeData('uploadedCsvData', response.data);
+                            location.reload(); // Reload to show the table
+                        }
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON?.error || 'Error uploading file');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
